@@ -16,8 +16,6 @@ CORS(app)
 # definindo tags
 home_tag = Tag(name="Documentação", description="Seleção de documentação: Swagger, Redoc ou RapiDoc")
 disputa_tag = Tag(name="Disputa", description="Inicia (Adição), visualização e remoção de disputas à base")
-produto_tag = Tag(name="Produto", description="Adição, visualização e remoção de produtos à base")
-comentario_tag = Tag(name="Comentario", description="Adição de um comentário à um produtos cadastrado na base")
 
 
 @app.get('/', tags=[home_tag])
@@ -40,7 +38,7 @@ def add_disputa(form: DisputaInitSchema):
     try:
         # criando conexão com a base
         session = Session()
-        # adicionando produto
+        # adicionando disputa
         session.add(disputa)
         # efetivando o camando de adição de novo item na tabela
         session.commit()
@@ -48,9 +46,10 @@ def add_disputa(form: DisputaInitSchema):
         return apresenta_disputa(disputa), 200
 
     except IntegrityError as e:
+        # TODO - MELHORAR INTEGRIDADE NESTE PONTO
         # como a duplicidade do nome é a provável razão do IntegrityError
-        error_msg = "Produto de mesmo nome já salvo na base :/"
-        logger.warning(f"Erro ao adicionar produto '{disputa.nomeX}', {error_msg}")
+        error_msg = "disputa de mesmo nome já salvo na base :/"
+        logger.warning(f"Erro ao adicionar disputa '{disputa.nomeX}', {error_msg}")
         return {"message": error_msg}, 409
 
     except Exception as e:
@@ -59,3 +58,52 @@ def add_disputa(form: DisputaInitSchema):
         logger.warning(f"Erro ao criar uma nova disputa entre os jogadores: '{disputa.nomeX}' e '{disputa.nomeO}', {error_msg}")
         return {"message": error_msg}, 400
 
+
+@app.get('/disputas', tags=[disputa_tag],
+         responses={"200": ListagemDisputasSchema, "404": ErrorSchema})
+def get_disputas():
+    """Faz a busca por todas as Disputas realizadas no jogo
+
+    Retorna uma representação da listagem de disputas.
+    """
+    logger.debug(f"Coletando histórico de Disputas")
+    # criando conexão com a base
+    session = Session()
+    # fazendo a busca
+    disputas = session.query(Disputa).all()
+
+    if not disputas:
+        # se não há disputas cadastradas
+        return {"disputas": []}, 200
+    else:
+        logger.debug(f"%d rodutos econtrados" % len(disputas))
+        # retorna a representação de disputa
+        print(disputas)
+        return apresenta_disputas(disputas), 200
+
+@app.delete('/disputa', tags=[disputa_tag],
+            responses={"200": DisputaDelSchema, "404": ErrorSchema})
+def del_disputa(query: DisputaBuscaSchema):
+    """Deleta uma Disputa a partir do id da disputa informada
+
+    Retorna uma mensagem de confirmação da remoção.
+    """
+    disputa_id = int(unquote(unquote(str(query.id))))
+    print(disputa_id)
+    logger.debug(f"Deletando disputa do id: #{disputa_id}")
+
+    # criando conexão com a base
+    session = Session()
+    # fazendo a remoção
+    count = session.query(Disputa).filter(Disputa.id == disputa_id).delete()
+    session.commit()
+
+    if count:
+        # retorna a representação da mensagem de confirmação
+        logger.debug(f"Deletada a disputa #{disputa_id}")
+        return {"message": "Disputa removida", "id": disputa_id}
+    else:
+        # se o disputa não foi encontrado
+        error_msg = "Disputa não encontrada na base :/"
+        logger.warning(f"Erro ao deletar a disputa #'{disputa_id}', {error_msg}")
+        return {"message": error_msg}, 404

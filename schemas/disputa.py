@@ -12,39 +12,44 @@ class DisputaInitSchema(BaseModel):
 
 
 class DisputaSchema(BaseModel):
-    """ Define como um novo produto a ser inserido deve ser representado
+    """ Define como um modelo base da tabela de disputa será representada
     """
-    nome: str = "Banana Prata"
-    quantidade: Optional[int] = 12
-    valor: float = 12.50
-
+    id: int = 1
+    nomeX: str = "Felipe"
+    pontosX: int = 3
+    nomeO: str = "Willian"
+    pontosO: int = 5
+    velha: int = 2
 
 class DisputaBuscaSchema(BaseModel):
     """ Define como deve ser a estrutura que representa a busca. Que será
-        feita apenas com base no nome do produto.
+        feita apenas com base no id da disputa.
     """
-    nome: str = "Teste"
+    id: int = 0
 
 
 class ListagemDisputasSchema(BaseModel):
-    """ Define como uma listagem de produtos será retornada.
+    """ Define como uma listagem de disputas será retornada.
     """
-    produtos:List[DisputaSchema]
+    disputas:List[DisputaSchema]
 
 
-# def apresenta_produtos(produtos: List[Produto]):
-#     """ Retorna uma representação do produto seguindo o schema definido em
-#         ProdutoViewSchema.
-#     """
-#     result = []
-#     for produto in produtos:
-#         result.append({
-#             "nome": produto.nome,
-#             "quantidade": produto.quantidade,
-#             "valor": produto.valor,
-#         })
+def apresenta_disputas(disputas: List[Disputa]):
+    """ Retorna uma lista de representação seguindo o schema definido em
+        DisputaViewSchema.
+    """
+    result = []
+    for item in disputas:
+        result.append({
+            "id": item.id,
+            "nomeX": item.nomeX,
+            "pontosX": item.pontosX,
+            "nomeO": item.nomeO,
+            "pontosO": item.pontosO,
+            "velha": item.velha
+        })
 
-#     return {"produtos": result}
+    return {"disputas": result}
 
 
 class DisputaViewSchema(BaseModel):
@@ -60,16 +65,16 @@ class DisputaViewSchema(BaseModel):
     # ultima_alteracao: disputa.ultima_alteracao
 
 
-class ProdutoDelSchema(BaseModel):
+class DisputaDelSchema(BaseModel):
     """ Define como deve ser a estrutura do dado retornado após uma requisição
         de remoção.
     """
-    mesage: str
-    nome: str
+    message: str
+    id: int
 
 def apresenta_disputa(disputa: Disputa):
-    """ Retorna uma representação do produto seguindo o schema definido em
-        ProdutoViewSchema.
+    """ Retorna uma representação da disputa seguindo o schema definido em
+        DisputaViewSchema.
     """
     return {
         "id": disputa.id,

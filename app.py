@@ -107,3 +107,111 @@ def del_disputa(query: DisputaBuscaSchema):
         error_msg = "Disputa não encontrada na base :/"
         logger.warning(f"Erro ao deletar a disputa #'{disputa_id}', {error_msg}")
         return {"message": error_msg}, 404
+
+
+@app.put('/disputa/checaresultado', tags=[disputa_tag],
+          responses={"200": ChecaResultadoResponseSchema, "409": ErrorSchema, "400": ErrorSchema})
+def checaresultado(form: ChecaResultadoRequestSchema):
+    """Cria uma nova disputa na base de dados
+
+    Retorna uma representação da partida iniciada.
+    """
+
+    # TODO Faz a verificação do vencedor
+
+    try:
+        response = ChecaResultadoResponseSchema(
+            jogo=form.jogo,
+            partida=None,
+            vencedor=None,
+            finalizado=False
+        )
+
+        disputa_id = form.disputa_id
+
+        print(disputa_id)
+
+        if len(form.jogo) != 9:
+            error_msg = "Jogo informado não corresponde a um jogo da velha válido :/"
+            logger.warning(f"Falha no processamento da disputa '{disputa_id}', {error_msg}")
+            return {"message": error_msg}, 400
+
+        # criando conexão com a base
+        session = Session()
+
+        # Verifica se o jogador X venceu
+        if(form.jogo[0] == 'X' and form.jogo[1] == 'X' and form.jogo[2] == 'X' or 
+           form.jogo[3] == 'X' and form.jogo[4] == 'X' and form.jogo[5] == 'X' or
+           form.jogo[6] == 'X' and form.jogo[7] == 'X' and form.jogo[8] == 'X' or
+           form.jogo[0] == 'X' and form.jogo[3] == 'X' and form.jogo[6] == 'X' or 
+           form.jogo[1] == 'X' and form.jogo[4] == 'X' and form.jogo[7] == 'X' or 
+           form.jogo[2] == 'X' and form.jogo[5] == 'X' and form.jogo[8] == 'X' or
+           form.jogo[0] == 'X' and form.jogo[4] == 'X' and form.jogo[8] == 'X' or
+           form.jogo[2] == 'X' and form.jogo[4] == 'X' and form.jogo[6] == 'X'):
+            response.vencedor = 'X'
+            response.finalizado = True
+            
+            # atualizando disputa
+            session.query(Disputa).filter(Disputa.id == disputa_id).update({'pontosX': 31})
+
+        if(form.jogo[0] == 'O' and form.jogo[1] == 'O' and form.jogo[2] == 'O' or 
+           form.jogo[3] == 'O' and form.jogo[4] == 'O' and form.jogo[5] == 'O' or
+           form.jogo[6] == 'O' and form.jogo[7] == 'O' and form.jogo[8] == 'O' or
+           form.jogo[0] == 'O' and form.jogo[3] == 'O' and form.jogo[6] == 'O' or 
+           form.jogo[1] == 'O' and form.jogo[4] == 'O' and form.jogo[7] == 'O' or 
+           form.jogo[2] == 'O' and form.jogo[5] == 'O' and form.jogo[8] == 'O' or
+           form.jogo[0] == 'O' and form.jogo[4] == 'O' and form.jogo[8] == 'O' or
+           form.jogo[2] == 'O' and form.jogo[4] == 'O' and form.jogo[6] == 'O'):
+            response.vencedor = 'O'
+            response.finalizado = True
+
+            # atualizando disputa
+            session.query(Disputa).filter(Disputa.id == disputa_id).update({'pontosO': 100})
+        
+        if not response.finalizado:
+            isVelha: bool = True
+
+            for x in form.jogo:
+                print(x)
+                if x == '':
+                    print("Entrou aqui??????")
+                    response.vencedor = None
+                    response.finalizado = False
+                    isVelha = False
+                    break
+            
+            print(isVelha)
+            if isVelha:
+                response.vencedor = "VELHA"
+                response.finalizado = True
+
+
+        # efetivando o camando de atualização do item na tabela
+        session.commit()
+
+        disputa = session.query(Disputa).filter(Disputa.id == disputa_id).first()
+
+        if not disputa:
+            # Se a disputa não foi encontrado
+            error_msg = "Disputa não encontrado na base :/"
+            logger.warning(f"Erro ao buscar disputa '{disputa_id}', {error_msg}")
+            return {"message": error_msg}, 404
+        else:
+            print("cHEGOU")
+            # logger.debug(f"Atualizado a disputa entre os jogadores: '{disputa.nomeX}' e '{disputa.nomeO}'")
+            response.partida = disputa
+            print("Atribuiu")
+            return apresenta_resultado(response), 200
+    except IntegrityError as e:
+        # TODO - MELHORAR INTEGRIDADE NESTE PONTO
+        # como a duplicidade do nome é a provável razão do IntegrityError
+        error_msg = "disputa de mesmo nome já salvo na base :/"
+        logger.warning(f"Erro ao adicionar disputa '{disputa.nomeX}', {error_msg}")
+        return {"message": error_msg}, 409
+
+    except Exception as e:
+        # caso um erro fora do previsto
+        error_msg = "Não foi possível salvar a disputa :/"
+        # logger.warning(f"Erro ao criar uma nova disputa entre os jogadores: '{disputa.nomeX}' e '{disputa.nomeO}', {error_msg}")
+        logger.warning(f"Erro: '{str(e)}', {error_msg}")
+        return {"message": error_msg}, 400

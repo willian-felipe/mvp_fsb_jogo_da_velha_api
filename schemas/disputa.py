@@ -53,7 +53,7 @@ def apresenta_disputas(disputas: List[Disputa]):
 
 
 class DisputaViewSchema(BaseModel):
-    """ Define como um produto será retornado: produto + comentários.
+    """ Define como uma disputa será retornada
     """
     id: int = 1
     nomeX: str = "Felipe"

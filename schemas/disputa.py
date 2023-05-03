@@ -8,9 +8,6 @@ class DisputaInitSchema(BaseModel):
     nomeX: str = "Felipe"
     nomeO: str = "Willian"
 
-
-
-
 class DisputaSchema(BaseModel):
     """ Define como um modelo base da tabela de disputa será representada
     """
@@ -27,12 +24,10 @@ class DisputaBuscaSchema(BaseModel):
     """
     id: int = 0
 
-
 class ListagemDisputasSchema(BaseModel):
     """ Define como uma listagem de disputas será retornada.
     """
     disputas:List[DisputaSchema]
-
 
 def apresenta_disputas(disputas: List[Disputa]):
     """ Retorna uma lista de representação seguindo o schema definido em
@@ -51,7 +46,6 @@ def apresenta_disputas(disputas: List[Disputa]):
 
     return {"disputas": result}
 
-
 class DisputaViewSchema(BaseModel):
     """ Define como uma disputa será retornada
     """
@@ -61,9 +55,6 @@ class DisputaViewSchema(BaseModel):
     nomeO: str = "Willian"
     pontosO: int = 5
     velha: int = 2
-    # data_criacao: disputa.data_criacao,
-    # ultima_alteracao: disputa.ultima_alteracao
-
 
 class DisputaDelSchema(BaseModel):
     """ Define como deve ser a estrutura do dado retornado após uma requisição

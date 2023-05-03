@@ -27,16 +27,6 @@ dictConfig({
             "formatter": "default",
             "stream": "ext://sys.stdout",
         },
-        # "email": {
-        #     "class": "logging.handlers.SMTPHandler",
-        #     "formatter": "default",
-        #     "level": "ERROR",
-        #     "mailhost": ("smtp.example.com", 587),
-        #     "fromaddr": "devops@example.com",
-        #     "toaddrs": ["receiver@example.com", "receiver2@example.com"],
-        #     "subject": "Error Logs",
-        #     "credentials": ("username", "password"),
-        # },
         "error_file": {
             "class": "logging.handlers.RotatingFileHandler",
             "formatter": "detailed",

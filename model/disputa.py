@@ -21,7 +21,7 @@ class Disputa(Base):
     def __init__(self, nomeX:str, nomeO:str, pontosX:int = 0, pontosO: int = 0, velha:int = 0, 
                  data_criacao:Union[DateTime, None] = None, ultima_alteracao:Union[DateTime, None] = None):
         """
-        Cria um disputa
+        Cria um disputa entre jogadores
 
         Arguments:
             nomeX: nomeX do jogador de 'X'

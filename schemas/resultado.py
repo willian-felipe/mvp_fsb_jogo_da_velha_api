@@ -14,7 +14,6 @@ class ChecaResultadoResponseSchema(BaseModel):
     """ Verifica se houve algum vencedor e informa o resultado atualizado.
     """
     jogo: List[str | None]
-    # partida: Any
     partida: DisputaViewSchema | None
     vencedor: str | None
     finalizado: bool

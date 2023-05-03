@@ -5,8 +5,6 @@ import os
 
 # importando os elementos definidos no modelo
 from model.base import Base
-# from model.comentario import Comentario
-# from model.produto import Produto
 from model.disputa import Disputa
 
 db_path = "database/"

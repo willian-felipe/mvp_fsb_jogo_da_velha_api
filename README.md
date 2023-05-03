@@ -2,7 +2,8 @@
 MVP do curso de Desenvolvimento Full Stack (Sprint 1) - Jogo da Velha (API)
 
 ## Processo de Instalação
-Para realizar o processo de instalação, basta seguir os passos-a-passos abaixo:
+Para realizar o processo de instalação, basta seguir os passo-a-passo abaixo:
+
     1. Validar se o pip está atualizado
         >>> python3 -m pip install --upgrade pip
     

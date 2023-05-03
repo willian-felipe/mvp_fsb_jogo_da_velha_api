@@ -139,6 +139,9 @@ def checaresultado(form: ChecaResultadoRequestSchema):
         # criando conexão com a base
         session = Session()
 
+        # Pega a disputa atual
+        disputaAtual = session.query(Disputa).filter(Disputa.id == disputa_id).first()
+
         # Verifica se o jogador X venceu
         if(form.jogo[0] == 'X' and form.jogo[1] == 'X' and form.jogo[2] == 'X' or 
            form.jogo[3] == 'X' and form.jogo[4] == 'X' and form.jogo[5] == 'X' or
@@ -152,7 +155,7 @@ def checaresultado(form: ChecaResultadoRequestSchema):
             response.finalizado = True
             
             # atualizando disputa
-            session.query(Disputa).filter(Disputa.id == disputa_id).update({'pontosX': 31})
+            session.query(Disputa).filter(Disputa.id == disputa_id).update({'pontosX': disputaAtual.pontosX + 1})
 
         if(form.jogo[0] == 'O' and form.jogo[1] == 'O' and form.jogo[2] == 'O' or 
            form.jogo[3] == 'O' and form.jogo[4] == 'O' and form.jogo[5] == 'O' or
@@ -166,7 +169,7 @@ def checaresultado(form: ChecaResultadoRequestSchema):
             response.finalizado = True
 
             # atualizando disputa
-            session.query(Disputa).filter(Disputa.id == disputa_id).update({'pontosO': 100})
+            session.query(Disputa).filter(Disputa.id == disputa_id).update({'pontosO': disputaAtual.pontosO + 1})
         
         if not response.finalizado:
             isVelha: bool = True
@@ -174,16 +177,17 @@ def checaresultado(form: ChecaResultadoRequestSchema):
             for x in form.jogo:
                 print(x)
                 if x == '':
-                    print("Entrou aqui??????")
                     response.vencedor = None
                     response.finalizado = False
                     isVelha = False
                     break
             
-            print(isVelha)
             if isVelha:
                 response.vencedor = "VELHA"
                 response.finalizado = True
+
+                # atualizando disputa
+                session.query(Disputa).filter(Disputa.id == disputa_id).update({'velha': disputaAtual.velha + 1})
 
 
         # efetivando o camando de atualização do item na tabela
@@ -197,10 +201,7 @@ def checaresultado(form: ChecaResultadoRequestSchema):
             logger.warning(f"Erro ao buscar disputa '{disputa_id}', {error_msg}")
             return {"message": error_msg}, 404
         else:
-            print("cHEGOU")
-            # logger.debug(f"Atualizado a disputa entre os jogadores: '{disputa.nomeX}' e '{disputa.nomeO}'")
             response.partida = disputa
-            print("Atribuiu")
             return apresenta_resultado(response), 200
     except IntegrityError as e:
         # TODO - MELHORAR INTEGRIDADE NESTE PONTO
